@@ -1,0 +1,1 @@
+A collection of R functions for factors, permutations, and lapply-ing.
