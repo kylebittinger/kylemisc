@@ -39,9 +39,12 @@ add_levels <- function (x, levels_to_add) {
 }
 
 
-#' Merge two factors, preserving order of levels
+#' Merge one factor into another, preserving order of levels
 #' 
-#' @param x,y Factors to be merged
+#' @param x The "dominant" factor, values from `x` will be used if they 
+#'   are not NA.
+#' @param y The factor to be merged into `x`, values from this factor will
+#'   be used wherever `x` is NA.
 #' @return The merged factor.
 #' @export
 merge_factors <- function (x, y) {
@@ -49,4 +52,29 @@ merge_factors <- function (x, y) {
   xy[is.na(xy)] <- as.character(y)[is.na(xy)]
   levs <- c(levels(x), levels(y)[!(levels(y) %in% levels(x))])
   factor(xy, levels=levs)
+}
+
+
+#' Combine factors by pasting values
+#' 
+#' Needs work
+#' 
+#' @param x,y Factors to be combined.
+#' @param sep Character string to separate the levels of x and y.
+#' @return A new factor with values created by pasting the values of `x`
+#'   and `y` together.
+#' @export
+paste_factors <- function (x, y, sep=" ") {
+  xc <- as.character(x)
+  yc <- as.character(y)
+  y_empty <- is.na(y) | (yc == "")
+  x_empty <- is.na(x) | (xc == "")
+  factor(
+    ifelse(
+      y_empty, 
+      xc, 
+      ifelse(
+        x_empty,
+        yc,
+        paste(xc, yc, sep=sep))))
 }

@@ -1,14 +1,3 @@
-#' Apply a function over a list or vector using names
-#' 
-#' @param X A list or vector.
-#' @param FUN A function to be applied to each element.  The first two 
-#'   arguments provided to `FUN` are the element name and element value.
-#' @return A list with names like X.
-#' @export
-lapply_names <- function (X, FUN, ...) {
-  mapply(FUN, names(X), X, ..., SIMPLIFY=F)
-}
-
 #' Shuffle a vector within each group
 #'
 #' @param x The vector to be shuffled.
@@ -30,8 +19,19 @@ shuffle_between_groups <- function (x, g) {
   g <- as.factor(g)
   x <- as.factor(x)
   # What is the value of x for every unique value of g?
-  x_per_g <- tapply(x, g, `[`, 1)
-  # This is what we want to shuffle.
+  x_vals_per_g <- tapply(x, g, unique, simplify=F)
+  # Check that x has one unique value for each value of g. If not, raise an 
+  # error with an informative message.
+  if (!all(sapply(x_vals_per_g, length) == 1)) {
+    stop(
+      "Multiple values detected within grouping factor.\n\n", 
+      "  Value of g: value(s) of x\n",
+      "  -----------------------\n",
+      paste0("  ", names(x_vals_per_g), ": ", x_vals_per_g, collapse="\n"))
+  }
+  # Values of x for each value of g.
+  x_per_g <- unlist(x_vals_per_g)
+  # Shuffled values of x for each value of g.
   x_per_g_shuffled <- sample(x_per_g)
   # Names are also shuffled, but we want to associate shuffled values 
   # with the original names.
@@ -39,9 +39,7 @@ shuffle_between_groups <- function (x, g) {
   # Now we need to get the new values of x for each value of g.  The unique
   # values of g are stored in the names, the shuffled values of x are stored 
   # in the vector x_per_g_shuffled.
-  new_x <- x_per_g_shuffled[as.character(g)]
-  # The new x is a numeric vector, cast back to a factor.
-  factor(new_x, labels=levels(x))
+  x_per_g_shuffled[as.character(g)]
 }
 
 #' Adonis for nested experimental designs
@@ -51,16 +49,16 @@ shuffle_between_groups <- function (x, g) {
 #' @param block_var The variable defining the nested groups.
 #' @param between_block_vars Variables that are constant within each block.
 #' @param within_block_vars Variables that vary within each block.
-#' @param nterms The total number of terms in the model.  I could figure this 
-#'   out from the formula, but I did not want to spend time implementing this 
-#'   feature, so you must provide the number of terms manually.  Sorry.
 #' @param nperm Number of permutations to run.
 #' @return An object describing the fit, similar to the output of `lm`.
 #' @export
-block_adonis <- function(
+nested_adonis <- function(
   formula, data, block_var, 
   between_block_vars=c(), within_block_vars=c(), 
-  nterms=1, nperm=9999) {
+  nperm=999) {
+  
+  # Total number of terms in the model
+  nterms <- length(between_block_vars) + length(within_block_vars)
   
   # Initial result, without permutations
   res0 <- adonis(formula, data=data, permutations=nterms)

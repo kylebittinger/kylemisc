@@ -1,16 +1,20 @@
 \name{merge_factors}
 \alias{merge_factors}
-\title{Merge two factors, preserving order of levels}
+\title{Merge one factor into another, preserving order of levels}
 \usage{
 merge_factors(x, y)
 }
 \arguments{
-  \item{x,y}{Factors to be merged}
+  \item{x}{The "dominant" factor, values from `x` will be
+  used if they are not NA.}
+
+  \item{y}{The factor to be merged into `x`, values from
+  this factor will be used wherever `x` is NA.}
 }
 \value{
 The merged factor.
 }
 \description{
-Merge two factors, preserving order of levels
+Merge one factor into another, preserving order of levels
 }
 
