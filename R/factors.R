@@ -57,8 +57,6 @@ merge_factors <- function (x, y) {
 
 #' Combine factors by pasting values
 #' 
-#' Needs work
-#' 
 #' @param x,y Factors to be combined.
 #' @param sep Character string to separate the levels of x and y.
 #' @return A new factor with values created by pasting the values of `x`

@@ -15,6 +15,6 @@ A new factor with values created by pasting the values of
 `x` and `y` together.
 }
 \description{
-Needs work
+Combine factors by pasting values
 }
 
