@@ -10,5 +10,5 @@ License: GPL (>= 2)
 Suggests:
     testthat
 Depends:
-    vegan
+    vegan,
     ggplot2

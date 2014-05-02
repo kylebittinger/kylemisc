@@ -3,7 +3,7 @@
 \title{Adonis for nested experimental designs}
 \usage{
 nested_adonis(formula, data, block_var, between_block_vars = c(),
-  within_block_vars = c(), nperm = 9999)
+  within_block_vars = c(), nperm = 999)
 }
 \arguments{
   \item{formula}{The model to be tested.}
