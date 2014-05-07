@@ -50,18 +50,18 @@ test_that("Shuffle between groups preserves levels", {
   expect_equal(levels(sbg), levels(x))
 })
 
-test_that("Nested adonis works for simple design", {
+test_that("Block adonis works for simple design", {
   x <- matrix(ncol=4, data=c(
      1,  1,  1,  1,  0,  0, 26, 21, 24, 29, 22, 22, 
      0,  1,  1,  0,  0,  1,  4,  2,  2,  3,  6,  2,
     43, 43, 42, 37, 43, 41, 20, 27, 24, 18, 22, 25,
      6,  5,  6, 12,  7,  8,  0,  0,  0,  0,  0,  1))
+  d <- vegdist(x)
   s <- data.frame(
     Treatment = gl(2, 6, labels=letters[1:2]),
     Subject = gl(6, 2, labels=letters[3:8]))
-  res <- nested_adonis(
-    x ~ Treatment, data=s, block_var="Subject", 
-    between_block_vars="Treatment", nperm=99)
+  set.seed(1)
+  res <- block_adonis(d ~ Treatment, data=s, block_var="Subject", nperm=99)
   expect_equal(res$aov.tab["Treatment", "F.Model"], 185.14, tol=0.1)
   expect_less_than(res$aov.tab["Treatment", "Pr(>F)"], 0.5)
 })

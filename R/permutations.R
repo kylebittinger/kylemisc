@@ -44,27 +44,43 @@ shuffle_between_groups <- function (x, g) {
 
 #' Adonis for nested experimental designs
 #' 
+#' Variables within the model, as well as the block-level variable, must be in 
+#' the data frame provided.
+#' 
 #' @param formula The model to be tested.
 #' @param data The data frame within which the model is evaluated.
-#' @param block_var The variable defining the nested groups.
-#' @param between_block_vars Variables that are constant within each block.
-#' @param within_block_vars Variables that vary within each block.
+#' @param block_var The name of the variable defining the nested groups.
 #' @param nperm Number of permutations to run.
 #' @return An object describing the fit, similar to the output of `lm`.
 #' @export
-nested_adonis <- function(
-  formula, data, block_var, 
-  between_block_vars=c(), within_block_vars=c(), 
-  nperm=999) {
+block_adonis <- function(formula, data, block_var, nperm=999) {
+  
+  # Save the LHS in the current environment.  Otherwise, adonis raises 
+  # an error when it tries to look up the variable in the parent frame.
+  lhs_name <- deparse(formula[[2]])
+  assign(lhs_name, eval(formula[[2]], data, parent.frame()))
+  
+  # All variables as an unevaluated list
+  vars <- attr(terms(formula), "variables")
+  # Method used by model.frame to get variable names
+  var_names <- sapply(vars, function (v) paste(deparse(v, width.cutoff=500)))
+  # First element is the call to `list`, second element is LHS
+  # Remove both to get variable names on RHS
+  rhs_names <- var_names[-c(1, 2)]
   
   # Total number of terms in the model
-  nterms <- length(between_block_vars) + length(within_block_vars)
+  # We grab this from the number of term labels, but could also use the number 
+  # of columns in the "factors" attribute, which stores a matrix of variables 
+  # by terms.  We can't use the "factors" attribute for the variable names, 
+  # however, because it doesn't remove backticks.
+  nterms <- length(attr(terms(formula), "term.labels"))
   
-  # Initial result, without permutations
+  # Initial result
+  # We need to run permutations for at least the number of terms or adonis 
+  # raises an error.
   res0 <- adonis(formula, data=data, permutations=nterms)
   
-  # Get the column of statistics from an analysis of variance 
-  # table provided in a set of test results 
+  # Get the column of statistics from a test result 
   get_stats <- function (test_result) {
     test_result$aov.tab[1:nterms,4]
   }
@@ -72,14 +88,11 @@ nested_adonis <- function(
   # Observed value of statistics
   f0 <- get_stats(res0)
   
-  # Values of statistics after permutations
+  # Values of F statistics after permutations
   f_perm <- replicate(nperm, {
     data1 <- data
-    for (v in between_block_vars) {
+    for (v in rhs_names) {
       data1[[v]] <- shuffle_between_groups(data1[[v]], data1[[block_var]])
-    }
-    for (v in within_block_vars) {
-      data1[[v]] <- shuffle_within_groups(data1[[v]], data1[[block_var]])
     }
     res1 <- adonis(formula, data=data1, permutations=nterms)
     get_stats(res1)
@@ -87,7 +100,8 @@ nested_adonis <- function(
 
   # Compute the p-values
   # The functions sweep and apply work differently if a vector is provided 
-  # rather than a matrix, so we have to handle the two cases separately.
+  # (nterms = 1) rather than a matrix (nterms > 1), so we have to handle the 
+  # two cases separately.
   if (nterms > 1) {
     f_greater <- sweep(cbind(f_perm, f0), 1, f0, ">=")
     pvals <- apply(f_greater, 1, function (x) sum(x) / length(x))
