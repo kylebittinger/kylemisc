@@ -63,7 +63,9 @@ block_adonis <- function(formula, data, block_var, nperm=999) {
   # All variables as an unevaluated list
   vars <- attr(terms(formula), "variables")
   # Method used by model.frame to get variable names
-  var_names <- sapply(vars, function (v) paste(deparse(v, width.cutoff=500)))
+  var_names <- sapply(vars, function (v) {
+    paste(deparse(v, width.cutoff=500), collapse=" ")
+  })
   # First element is the call to `list`, second element is LHS
   # Remove both to get variable names on RHS
   rhs_names <- var_names[-c(1, 2)]
