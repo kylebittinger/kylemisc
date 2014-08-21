@@ -1,7 +1,7 @@
 export(add_levels)
 export(lapply_names)
 export(merge_factors)
-export(nested_adonis)
+export(block_adonis)
 export(paste_factors)
 export(remove_levels)
 export(rename_levels)
