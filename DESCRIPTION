@@ -3,6 +3,8 @@ Type: Package
 Title: Utitlity functions from Kyle
 Version: 0.0.6
 Date: 2014-05-01
+RoxygenNote: 7.1.1
+Encoding: UTF-8
 Author: Kyle Bittinger
 Maintainer: Kyle Bittinger <kylebittinger@gmail.com>
 Description: Utility functions for factors, permutations, and lapply-ing.
